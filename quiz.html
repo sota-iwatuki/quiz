@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>熱中症対策＆ハラスメント対策　2026.06</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background: linear-gradient(160deg, #e8f5ee 0%, #f0faf4 40%, #fffbf0 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px 40px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 12px 50px rgba(26,107,60,0.15);
+      max-width: 740px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1a6b3c 0%, #2d9e5f 100%);
+      color: #fff;
+      padding: 28px 32px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.07); border-radius: 50%;
+    }
+    .header::after {
+      content: '';
+      position: absolute; bottom: -20px; left: -20px;
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,0.06); border-radius: 50%;
+    }
+    .header h1 { font-size: 1.55rem; line-height: 1.5; font-weight: 700; letter-spacing: 0.04em; position: relative; }
+    .header .subtitle { margin-top: 6px; font-size: 0.88rem; opacity: 0.85; position: relative; }
+
+    /* admin link hidden in header */
+    .admin-link {
+      position: absolute; bottom: 8px; right: 14px;
+      font-size: 0.7rem; color: rgba(255,255,255,0.35);
+      cursor: pointer; user-select: none; z-index: 10;
+      text-decoration: none;
+    }
+    .admin-link:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── Screens ── */
+    #start-screen  { display: block; }
+    #quiz-screen   { display: none; }
+    #result-screen { display: none; }
+    #admin-login-screen { display: none; }
+    #admin-screen  { display: none; }
+
+    /* ── Start Screen ── */
+    #start-screen { padding: 0 0 40px; }
+
+    .illust-banner {
+      background: linear-gradient(135deg, #e8f5ee, #fffbf0);
+      padding: 28px 20px 20px;
+      display: flex; justify-content: center; gap: 32px; align-items: flex-end;
+      border-bottom: 2px dashed #c8e8d8;
+    }
+    .illust-banner svg { overflow: visible; }
+
+    .start-body { padding: 32px 36px 0; }
+
+    .start-intro {
+      font-size: 0.97rem; color: #444; line-height: 1.9; margin-bottom: 28px;
+      padding: 16px 20px; background: #f7fbf9;
+      border-radius: 12px; border-left: 4px solid #2d9e5f;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.88rem; font-weight: 700; color: #1a6b3c; margin-bottom: 6px; letter-spacing: 0.04em; }
+    .form-group label .required { background: #e74c3c; color: #fff; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 13px 16px; border: 2px solid #c8e8d8; border-radius: 10px;
+      font-size: 1rem; font-family: inherit; color: #222;
+      transition: border-color 0.2s, box-shadow 0.2s; background: #fff;
+      appearance: none; -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: #2d9e5f; box-shadow: 0 0 0 3px rgba(45,158,95,0.15);
+    }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▼'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #2d9e5f; font-size: 0.75rem; pointer-events: none; }
+
+    .btn-start {
+      width: 100%; margin-top: 8px;
+      background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 17px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.1em;
+    }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,107,60,0.35); }
+    .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Quiz Screen ── */
+    #quiz-screen { padding: 32px 36px; }
+
+    .quiz-meta {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+      padding: 10px 14px; background: #f7fbf9; border-radius: 10px;
+      font-size: 0.84rem; color: #555;
+    }
+    .quiz-meta .name-tag { font-weight: 700; color: #1a6b3c; }
+
+    .progress-bar-wrap { background: #e8f5ee; border-radius: 10px; height: 10px; margin-bottom: 6px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #1a6b3c, #2d9e5f); border-radius: 10px; transition: width 0.5s ease; }
+    .progress-label { font-size: 0.82rem; color: #888; margin-bottom: 22px; }
+
+    .q-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .question-number { font-size: 0.88rem; font-weight: 700; color: #2d9e5f; letter-spacing: 0.1em; }
+
+    .question-text {
+      font-size: 1.04rem; line-height: 1.88; color: #222; margin-bottom: 28px;
+      padding: 18px 22px; background: #f7fbf9;
+      border-left: 5px solid #2d9e5f; border-radius: 0 12px 12px 0;
+    }
+
+    .answer-buttons { display: flex; gap: 14px; justify-content: center; margin-bottom: 20px; }
+    .btn-answer {
+      flex: 1; max-width: 220px; padding: 16px; font-size: 1.15rem; font-weight: 700;
+      border: 3px solid #ddd; border-radius: 14px; background: #fff; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.05em;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-answer.yes { color: #1a6b3c; border-color: #2d9e5f; }
+    .btn-answer.yes:hover:not(:disabled) { background: #e8f5ee; }
+    .btn-answer.no  { color: #c0392b; border-color: #e74c3c; }
+    .btn-answer.no:hover:not(:disabled)  { background: #fdf0ee; }
+    .btn-answer.selected-correct { background: #1a6b3c; border-color: #1a6b3c; color: #fff; }
+    .btn-answer.selected-wrong   { background: #c0392b; border-color: #c0392b; color: #fff; }
+    .btn-answer:disabled { cursor: default; }
+
+    .feedback-box {
+      display: none; padding: 14px 18px; border-radius: 12px;
+      font-size: 0.93rem; line-height: 1.75; margin-bottom: 20px;
+      align-items: flex-start; gap: 10px;
+    }
+    .feedback-box.correct { background: #e8f5ee; border: 2px solid #2d9e5f; color: #1a6b3c; }
+    .feedback-box.wrong   { background: #fdf0ee; border: 2px solid #e74c3c; color: #c0392b; }
+    .feedback-box .mark   { font-size: 1.5rem; flex-shrink: 0; line-height: 1; }
+
+    .btn-next {
+      display: none; width: 100%;
+      background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; border: none; border-radius: 50px; padding: 14px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.08em;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,107,60,0.35); }
+
+    /* ── Result Screen ── */
+    #result-screen { padding: 36px; }
+
+    .result-person-card {
+      display: flex; align-items: center; gap: 16px;
+      background: linear-gradient(135deg, #e8f5ee, #f7fbf9);
+      border: 2px solid #c8e8d8; border-radius: 16px;
+      padding: 16px 20px; margin-bottom: 24px;
+    }
+    .result-person-card svg { flex-shrink: 0; }
+    .result-person-info .label { font-size: 0.78rem; color: #2d9e5f; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 2px; }
+    .result-person-info .value { font-size: 1.05rem; font-weight: 700; color: #1a6b3c; }
+    .result-person-info .office-tag { display: inline-block; background: #2d9e5f; color: #fff; font-size: 0.8rem; padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+
+    .result-center { text-align: center; margin-bottom: 28px; }
+    .score-circle {
+      width: 150px; height: 150px; border-radius: 50%;
+      background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      margin: 0 auto 20px; box-shadow: 0 10px 30px rgba(26,107,60,0.4);
+    }
+    .score-circle .score-num   { font-size: 3rem; font-weight: 700; line-height: 1; }
+    .score-circle .score-denom { font-size: 0.95rem; opacity: 0.85; }
+
+    .result-message { font-size: 1.25rem; font-weight: 700; color: #1a6b3c; margin-bottom: 8px; }
+    .result-sub     { font-size: 0.92rem; color: #555; line-height: 1.8; white-space: pre-line; }
+
+    .answers-summary { margin-bottom: 28px; }
+    .answers-summary h3 { font-size: 0.88rem; color: #888; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; letter-spacing: 0.04em; }
+    .summary-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f2f2f2; font-size: 0.88rem; color: #444; line-height: 1.55; }
+    .summary-item .s-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .summary-item .s-num  { font-weight: 700; color: #2d9e5f; flex-shrink: 0; }
+
+    .result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-retry {
+      flex: 1; min-width: 140px;
+      background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; border: none; border-radius: 50px; padding: 14px 20px;
+      font-size: 0.97rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.06em;
+    }
+    .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,107,60,0.35); }
+
+    /* ── Admin Login ── */
+    #admin-login-screen { padding: 48px 36px; text-align: center; }
+    .admin-login-title { font-size: 1.1rem; font-weight: 700; color: #1a6b3c; margin-bottom: 8px; }
+    .admin-login-sub   { font-size: 0.88rem; color: #888; margin-bottom: 28px; }
+    .admin-login-form  { max-width: 320px; margin: 0 auto; }
+    .admin-login-form input {
+      width: 100%; padding: 13px 16px; border: 2px solid #c8e8d8; border-radius: 10px;
+      font-size: 1rem; font-family: inherit; color: #222; margin-bottom: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .admin-login-form input:focus { outline: none; border-color: #2d9e5f; box-shadow: 0 0 0 3px rgba(45,158,95,0.15); }
+    .btn-admin-login {
+      width: 100%; background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; border: none; border-radius: 50px; padding: 14px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.08em;
+    }
+    .btn-admin-login:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,107,60,0.35); }
+    .admin-error { color: #e74c3c; font-size: 0.88rem; margin-top: 10px; display: none; }
+    .btn-admin-back { margin-top: 16px; background: none; border: none; color: #888; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+
+    /* ── Admin Screen ── */
+    #admin-screen { padding: 28px 28px 36px; }
+
+    .admin-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+    }
+    .admin-title { font-size: 1.15rem; font-weight: 700; color: #1a6b3c; }
+    .admin-actions { display: flex; gap: 8px; }
+
+    .btn-csv {
+      background: #fff; border: 2px solid #2d9e5f; color: #1a6b3c;
+      border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; white-space: nowrap;
+    }
+    .btn-csv:hover { background: #e8f5ee; }
+
+    .btn-clear-data {
+      background: #fff; border: 2px solid #e74c3c; color: #c0392b;
+      border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-clear-data:hover { background: #fdf0ee; }
+
+    .btn-admin-logout {
+      background: #f0f0f0; border: none; color: #666;
+      border-radius: 8px; padding: 8px 14px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-admin-logout:hover { background: #e0e0e0; }
+
+    .admin-stats {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1; min-width: 110px; background: #f7fbf9; border: 1px solid #c8e8d8;
+      border-radius: 12px; padding: 14px 16px; text-align: center;
+    }
+    .stat-card .stat-num  { font-size: 1.8rem; font-weight: 700; color: #1a6b3c; line-height: 1; }
+    .stat-card .stat-label { font-size: 0.78rem; color: #888; margin-top: 4px; }
+
+    .filter-row {
+      display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .filter-row select {
+      padding: 8px 12px; border: 1px solid #c8e8d8; border-radius: 8px;
+      font-family: inherit; font-size: 0.88rem; color: #333;
+      background: #fff; appearance: none; -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .filter-row select:focus { outline: none; border-color: #2d9e5f; }
+
+    .admin-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #e0e0e0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    thead { background: linear-gradient(135deg, #1a6b3c, #2d9e5f); color: #fff; }
+    thead th { padding: 11px 12px; text-align: left; font-weight: 700; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f7fbf9; }
+    tbody td { padding: 10px 12px; color: #333; vertical-align: middle; }
+
+    .score-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-weight: 700; font-size: 0.82rem;
+    }
+    .score-badge.perfect  { background: #ffd700; color: #7a6000; }
+    .score-badge.high     { background: #e8f5ee; color: #1a6b3c; }
+    .score-badge.mid      { background: #fff3e0; color: #e65100; }
+    .score-badge.low      { background: #fdf0ee; color: #c0392b; }
+
+    .answers-dot { display: flex; gap: 3px; flex-wrap: wrap; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; font-size: 0px; }
+    .dot.ok  { background: #2d9e5f; }
+    .dot.ng  { background: #e74c3c; }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: #aaa; font-size: 0.95rem; }
+    .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .header { padding: 22px 18px 18px; }
+      .header h1 { font-size: 1.15rem; }
+      .start-body, #quiz-screen, #result-screen, #admin-screen, #admin-login-screen { padding: 22px 18px; }
+      .illust-banner { gap: 16px; padding: 20px 10px 14px; }
+      .answer-buttons { gap: 8px; }
+      .btn-answer { font-size: 1rem; padding: 13px 10px; }
+      .admin-stats { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <h1>熱中症対策＆ハラスメント対策<br>2026.06</h1>
+    <p class="subtitle">全10問　Yes / No でお答えください</p>
+    <span class="admin-link" onclick="showAdminLogin()" title="管理者用">管理</span>
+  </div>
+
+  <!-- ══ START SCREEN ══ -->
+  <div id="start-screen">
+    <div class="illust-banner">
+      <!-- 太陽キャラ -->
+      <svg width="90" height="110" viewBox="0 0 90 110">
+        <g stroke="#f5a623" stroke-width="3" stroke-linecap="round">
+          <line x1="45" y1="6"  x2="45" y2="14"/><line x1="45" y1="66" x2="45" y2="74"/>
+          <line x1="6"  y1="40" x2="14" y2="40"/><line x1="76" y1="40" x2="84" y2="40"/>
+          <line x1="16" y1="16" x2="22" y2="22"/><line x1="68" y1="58" x2="74" y2="64"/>
+          <line x1="74" y1="16" x2="68" y2="22"/><line x1="22" y1="58" x2="16" y2="64"/>
+        </g>
+        <circle cx="45" cy="40" r="20" fill="#ffd54f" stroke="#f5a623" stroke-width="2"/>
+        <ellipse cx="39" cy="37" rx="3" ry="3.5" fill="#5d3a00"/>
+        <ellipse cx="51" cy="37" rx="3" ry="3.5" fill="#5d3a00"/>
+        <path d="M38 45 Q45 52 52 45" stroke="#5d3a00" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="33" rx="3" ry="4.5" fill="#64b5f6" opacity="0.85" transform="rotate(-15 30 33)"/>
+        <ellipse cx="62" cy="30" rx="2.5" ry="3.5" fill="#64b5f6" opacity="0.75" transform="rotate(10 62 30)"/>
+        <circle cx="45" cy="82" r="9" fill="#ffe0b2" stroke="#f5a623" stroke-width="1.5"/>
+        <rect x="36" y="90" width="18" height="14" rx="5" fill="#2d9e5f"/>
+        <line x1="36" y1="93" x2="28" y2="100" stroke="#2d9e5f" stroke-width="5" stroke-linecap="round"/>
+        <line x1="54" y1="93" x2="62" y2="100" stroke="#2d9e5f" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="41" cy="80" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <ellipse cx="49" cy="80" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <path d="M41 85 Q45 89 49 85" stroke="#5d3a00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <rect x="62" y="92" width="9" height="14" rx="3" fill="#64b5f6" stroke="#1976d2" stroke-width="1"/>
+        <rect x="64" y="89" width="5" height="4" rx="1.5" fill="#90caf9"/>
+      </svg>
+      <!-- ハンドシェイク -->
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="52" r="38" fill="#e8f5ee" stroke="#c8e8d8" stroke-width="2"/>
+        <circle cx="28" cy="30" r="10" fill="#ffcc80" stroke="#e8a020" stroke-width="1.5"/>
+        <rect x="20" y="40" width="16" height="18" rx="5" fill="#1a6b3c"/>
+        <ellipse cx="24" cy="28" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <ellipse cx="32" cy="28" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <path d="M24 33 Q28 37 32 33" stroke="#5d3a00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="82" cy="30" r="10" fill="#ffcc80" stroke="#e8a020" stroke-width="1.5"/>
+        <rect x="74" y="40" width="16" height="18" rx="5" fill="#2d9e5f"/>
+        <ellipse cx="78" cy="28" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <ellipse cx="86" cy="28" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <path d="M78 33 Q82 37 86 33" stroke="#5d3a00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M36 52 Q55 42 74 52" stroke="#e8a020" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="55" cy="49" rx="8" ry="6" fill="#ffd54f" stroke="#e8a020" stroke-width="1.5"/>
+        <path d="M55 63 C55 63 46 56 46 50.5 C46 47.5 48.5 45 51.5 45 C53.2 45 54.6 46 55 47 C55.4 46 56.8 45 58.5 45 C61.5 45 64 47.5 64 50.5 C64 56 55 63 55 63Z" fill="#e74c3c" opacity="0.85"/>
+        <rect x="6" y="70" width="36" height="22" rx="8" fill="#fff" stroke="#2d9e5f" stroke-width="1.5"/>
+        <polygon points="18,92 12,100 24,92" fill="#fff" stroke="#2d9e5f" stroke-width="1.5"/>
+        <text x="24" y="85" font-size="9.5" fill="#1a6b3c" font-weight="bold" text-anchor="middle">尊重</text>
+        <rect x="68" y="70" width="36" height="22" rx="8" fill="#fff" stroke="#2d9e5f" stroke-width="1.5"/>
+        <polygon points="80,92 86,100 92,92" fill="#fff" stroke="#2d9e5f" stroke-width="1.5"/>
+        <text x="86" y="85" font-size="9.5" fill="#1a6b3c" font-weight="bold" text-anchor="middle">協力</text>
+      </svg>
+      <!-- 水分補給 -->
+      <svg width="70" height="110" viewBox="0 0 70 110">
+        <rect x="30" y="10" width="10" height="50" rx="5" fill="#fff" stroke="#e0e0e0" stroke-width="1.5"/>
+        <rect x="33" y="30" width="4" height="27" rx="2" fill="#e74c3c"/>
+        <circle cx="35" cy="65" r="8" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+        <text x="35" y="8" font-size="8" fill="#888" text-anchor="middle">℃</text>
+        <line x1="40" y1="40" x2="44" y2="40" stroke="#aaa" stroke-width="1.2"/>
+        <line x1="40" y1="48" x2="44" y2="48" stroke="#aaa" stroke-width="1.2"/>
+        <line x1="40" y1="56" x2="44" y2="56" stroke="#aaa" stroke-width="1.2"/>
+        <circle cx="35" cy="84" r="9" fill="#ffe0b2" stroke="#f5a623" stroke-width="1.5"/>
+        <ellipse cx="31" cy="82" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <ellipse cx="39" cy="82" rx="1.5" ry="1.5" fill="#5d3a00"/>
+        <path d="M31 87 Q35 91 39 87" stroke="#5d3a00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <rect x="27" y="93" width="16" height="12" rx="4" fill="#1a6b3c"/>
+        <path d="M18 76 C18 76 12 85 12 89 C12 93 14.7 96 18 96 C21.3 96 24 93 24 89 C24 85 18 76 18 76Z" fill="#64b5f6" stroke="#1976d2" stroke-width="1"/>
+        <ellipse cx="15.5" cy="90" rx="2" ry="3" fill="#fff" opacity="0.4" transform="rotate(-20 15.5 90)"/>
+      </svg>
+    </div>
+
+    <div class="start-body">
+      <p class="start-intro">
+        熱中症対策とハラスメント予防について、<br>
+        クイズ形式で知識を確認しましょう。<br>
+        各問題に <strong>Yes（はい）</strong> か <strong>No（いいえ）</strong> でお答えください。
+      </p>
+      <div class="form-group">
+        <label>お名前<span class="required">必須</span></label>
+        <input type="text" id="input-name" placeholder="例：山田 太郎" oninput="checkForm()">
+      </div>
+      <div class="form-group">
+        <label>所属事業所<span class="required">必須</span></label>
+        <div class="select-wrap">
+          <select id="input-office" onchange="checkForm()">
+            <option value="">-- 選択してください --</option>
+            <option value="碧南・武豊">碧南・武豊</option>
+            <option value="川越・四エル">川越・四エル</option>
+            <option value="知多エル">知多エル</option>
+            <option value="産設・大江">産設・大江</option>
+            <option value="映像・総務">映像・総務</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>クイズをスタート →</button>
+    </div>
+  </div>
+
+  <!-- ══ QUIZ SCREEN ══ -->
+  <div id="quiz-screen">
+    <div class="quiz-meta">
+      <svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#e8f5ee" stroke="#2d9e5f" stroke-width="1.5"/><circle cx="10" cy="7.5" r="2.5" fill="#2d9e5f"/><path d="M5 15.5 C5 12.5 7 11 10 11 C13 11 15 12.5 15 15.5" stroke="#2d9e5f" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      <span class="name-tag" id="quiz-name-display"></span>
+      <span style="color:#bbb;">｜</span>
+      <span id="quiz-office-display"></span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <p class="progress-label" id="progress-label"></p>
+    <div class="q-header">
+      <div class="q-icon" id="q-icon"></div>
+      <p class="question-number" id="question-number"></p>
+    </div>
+    <div class="question-text" id="question-text"></div>
+    <div class="answer-buttons">
+      <button class="btn-answer yes" id="btn-yes" onclick="answer(true)">⭕ Yes（はい）</button>
+      <button class="btn-answer no"  id="btn-no"  onclick="answer(false)">❌ No（いいえ）</button>
+    </div>
+    <div class="feedback-box" id="feedback-box">
+      <span class="mark" id="feedback-mark"></span>
+      <span id="feedback-text"></span>
+    </div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()"></button>
+  </div>
+
+  <!-- ══ RESULT SCREEN ══ -->
+  <div id="result-screen">
+    <div class="result-person-card">
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="22" fill="#e8f5ee" stroke="#2d9e5f" stroke-width="2"/>
+        <circle cx="24" cy="18" r="8" fill="#ffcc80" stroke="#f5a623" stroke-width="1.5"/>
+        <path d="M10 40 C10 31 16 27 24 27 C32 27 38 31 38 40" fill="#2d9e5f" stroke="#1a6b3c" stroke-width="1"/>
+      </svg>
+      <div class="result-person-info">
+        <div class="label">回答者</div>
+        <div class="value" id="result-name"></div>
+        <div><span class="office-tag" id="result-office"></span></div>
+      </div>
+    </div>
+    <div class="result-center">
+      <div class="score-circle">
+        <span class="score-num" id="score-num"></span>
+        <span class="score-denom">/ 10問</span>
+      </div>
+      <p class="result-message" id="result-message"></p>
+      <p class="result-sub" id="result-sub"></p>
+    </div>
+    <div class="answers-summary">
+      <h3>▼ 回答の振り返り</h3>
+      <div id="summary-list"></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-retry" onclick="retryQuiz()">↩ もう一度チャレンジ</button>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN LOGIN ══ -->
+  <div id="admin-login-screen">
+    <p class="admin-login-title">🔐 管理者ログイン</p>
+    <p class="admin-login-sub">管理者パスワードを入力してください</p>
+    <div class="admin-login-form">
+      <input type="password" id="admin-pw-input" placeholder="パスワード"
+        onkeydown="if(event.key==='Enter') adminLogin()">
+      <button class="btn-admin-login" onclick="adminLogin()">ログイン</button>
+      <p class="admin-error" id="admin-error">パスワードが違います</p>
+      <button class="btn-admin-back" onclick="showScreen('start-screen')">← 戻る</button>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN SCREEN ══ -->
+  <div id="admin-screen">
+    <div class="admin-header-row">
+      <div class="admin-title">📋 回答結果一覧</div>
+      <div class="admin-actions">
+        <button class="btn-csv" onclick="downloadCSV()">⬇ CSV出力</button>
+        <button class="btn-clear-data" onclick="clearAllData()">🗑 データ削除</button>
+        <button class="btn-admin-logout" onclick="adminLogout()">ログアウト</button>
+      </div>
+    </div>
+
+    <div class="admin-stats" id="admin-stats"></div>
+
+    <div class="filter-row">
+      <select id="filter-office" onchange="renderTable()">
+        <option value="">すべての事業所</option>
+        <option value="碧南・武豊">碧南・武豊</option>
+        <option value="川越・四エル">川越・四エル</option>
+        <option value="知多エル">知多エル</option>
+        <option value="産設・大江">産設・大江</option>
+        <option value="映像・総務">映像・総務</option>
+      </select>
+      <select id="filter-score" onchange="renderTable()">
+        <option value="">すべての得点</option>
+        <option value="10">満点（10点）</option>
+        <option value="high">高得点（8〜9点）</option>
+        <option value="mid">中（5〜7点）</option>
+        <option value="low">低（〜4点）</option>
+      </select>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>日時</th>
+            <th>氏名</th>
+            <th>事業所</th>
+            <th>得点</th>
+            <th>正誤</th>
+          </tr>
+        </thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  /* ─────────────────────────────────────────
+     定数・データ
+  ───────────────────────────────────────── */
+  const ADMIN_PASSWORD = 'tokai2026';   // ← 管理者パスワード（変更可）
+  const STORAGE_KEY    = 'quiz_results_v1';
+
+  const questions = [
+    { number:"第一問",  category:"heat",       text:"2026年の夏は、2025年の夏よりも暑くなる見込みです。", answer:true, feedback:"正解です！2026年の夏は昨年を上回る猛暑が予想されています。例年以上の熱中症対策が必要です。" },
+    { number:"第二問",  category:"heat",       text:"暑熱順化とは、身体が暑さに慣れ、汗をかきやすくして体温調節がうまくできるようにすることです。暑熱順化することで、熱中症になりにくくなります。", answer:true, feedback:"正解です！暑熱順化により体温調節機能が向上し、熱中症リスクを大幅に下げることができます。" },
+    { number:"第三問",  category:"heat",       text:"暑熱順化には、数日から2週間かかります。暑くなる前に無理のない範囲で汗をかくことが大切です。", answer:true, feedback:"正解です！暑熱順化には時間がかかるため、暑い季節が来る前から準備を始めることが重要です。" },
+    { number:"第四問",  category:"heat",       text:"暑熱順化ができていない可能性が高いタイミングとしては、５月の暑い日、梅雨の晴れ間、梅雨明け、盆明け、などがあります。この時期は特に、こまめに水分塩分の摂取や休憩で体を冷やす意識をすることが大切です。", answer:true, feedback:"正解です！これらのタイミングは身体が暑さに慣れていない危険な時期です。特に意識して水分・塩分補給と休憩をとりましょう。" },
+    { number:"第五問",  category:"heat",       text:"経験の浅い方は、作業中に「気分が悪くなりそうなので、休憩を取りたい」や「水分を取りたい」と言い出しにくいことがあります。コミュニケーションがとれる職場の構築も、大切な熱中症対策の一つになります。", answer:true, feedback:"正解です！声を上げやすい職場づくりが、熱中症の重症化を防ぐ重要な対策です。周囲が積極的に声をかける環境を整えましょう。" },
+    { number:"第六問",  category:"harassment", text:"コミュニケーションがとりやすい職場の要素のひとつが、ハラスメントに気を付けることです。ハラスメントとは、相手の尊厳や人格を不当に傷つける行為です。", answer:true, feedback:"正解です！ハラスメントのない職場は、誰もが安心して発言できる環境を生み出し、コミュニケーション促進につながります。" },
+    { number:"第七問",  category:"harassment", text:"緊急時以外で、何か指導・指摘する際は、相手を尊重し、人前ではなく個別で指導・指摘する。これも上手なハラスメント対策のひとつです。", answer:true, feedback:"正解です！人前での叱責は相手の尊厳を傷つけます。個別で丁寧に伝えることが、信頼関係の構築とハラスメント防止につながります。" },
+    { number:"第八問",  category:"harassment", text:"肌の色や外見に関する行動は、現代の職場や社会においてハラスメントに該当し、たとえ悪気がなくても、相手を傷つけ、不快感を与える可能性があり、注意が必要です。", answer:true, feedback:"正解です！悪意の有無にかかわらず、相手が不快に感じればハラスメントになります。外見に関する発言・行動には特に注意しましょう。" },
+    { number:"第九問",  category:"harassment", text:"あるお笑い芸人さんは、「近年は、「誰も傷つけない優しい笑い」が求められるようになりました。…でもそうなると今度はキレがなくなるので、ちょっと面白くない。…ユーモア力を身に付けるためには、笑わせる技術を磨く道とともに、ユーモア文化を育てる役割を担っている意識をもつ」ことが大事と話されていました。これも、ハラスメント予防努力として有効です。", answer:true, feedback:"正解です！誰も傷つけない笑いを意識すること、そしてユーモア文化を育てる姿勢は、ハラスメント予防において大切な視点です。" },
+    { number:"第十問",  category:"harassment", text:"トーカイテックにも経験の浅い社員が多いですし、中プラさんも派遣さんなど、経験の浅い方も増えてきています。相手の担当者が若くても、仕事を頂いている、という意識と態度を示す尊重の姿勢は、健全な現場関係の基本と考えています。今後も尊重し合う関係性の構築よろしくお願いします。", answer:true, feedback:"正解です！相手の経験年数にかかわらず敬意をもって接することが、信頼できる現場・職場関係の基盤となります。" }
+  ];
+
+  const heatIcon    = `<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="#ffd54f" stroke="#f5a623" stroke-width="1.5"/><g stroke="#f5a623" stroke-width="2" stroke-linecap="round"><line x1="16" y1="3" x2="16" y2="7"/><line x1="16" y1="25" x2="16" y2="29"/><line x1="3" y1="16" x2="7" y2="16"/><line x1="25" y1="16" x2="29" y2="16"/><line x1="7" y1="7" x2="10" y2="10"/><line x1="22" y1="22" x2="25" y2="25"/><line x1="25" y1="7" x2="22" y2="10"/><line x1="10" y1="22" x2="7" y2="25"/></g><ellipse cx="13" cy="14" rx="1.5" ry="1.8" fill="#5d3a00"/><ellipse cx="19" cy="14" rx="1.5" ry="1.8" fill="#5d3a00"/><path d="M13 19 Q16 22 19 19" stroke="#5d3a00" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`;
+  const harassIcon  = `<svg width="32" height="32" viewBox="0 0 32 32"><circle cx="11" cy="10" r="5" fill="#ffcc80" stroke="#e8a020" stroke-width="1"/><circle cx="21" cy="10" r="5" fill="#ffcc80" stroke="#e8a020" stroke-width="1"/><path d="M6 22 C6 17 8.5 15 11 15 C13.5 15 14.5 16 16 16 C17.5 16 18.5 15 21 15 C23.5 15 26 17 26 22" fill="#2d9e5f"/><ellipse cx="9.5" cy="9" rx="1.2" ry="1.2" fill="#5d3a00"/><ellipse cx="12.5" cy="9" rx="1.2" ry="1.2" fill="#5d3a00"/><ellipse cx="19.5" cy="9" rx="1.2" ry="1.2" fill="#5d3a00"/><ellipse cx="22.5" cy="9" rx="1.2" ry="1.2" fill="#5d3a00"/><path d="M9.5 12 Q11 14 12.5 12" stroke="#5d3a00" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M19.5 12 Q21 14 22.5 12" stroke="#5d3a00" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>`;
+
+  /* ─────────────────────────────────────────
+     クイズ状態
+  ───────────────────────────────────────── */
+  let current = 0, score = 0, userAnswers = [];
+  let userName = '', userOffice = '';
+
+  function checkForm() {
+    const name   = document.getElementById('input-name').value.trim();
+    const office = document.getElementById('input-office').value;
+    document.getElementById('btn-start').disabled = !(name && office);
+  }
+
+  function startQuiz() {
+    userName   = document.getElementById('input-name').value.trim();
+    userOffice = document.getElementById('input-office').value;
+    if (!userName || !userOffice) return;
+    current = 0; score = 0; userAnswers = [];
+    showScreen('quiz-screen');
+    document.getElementById('quiz-name-display').textContent   = userName;
+    document.getElementById('quiz-office-display').textContent = userOffice;
+    showQuestion();
+  }
+
+  function showQuestion() {
+    const q = questions[current], total = questions.length;
+    document.getElementById('progress-bar').style.width   = ((current / total) * 100) + '%';
+    document.getElementById('progress-label').textContent  = `${current + 1} / ${total} 問`;
+    document.getElementById('question-number').textContent = q.number;
+    document.getElementById('question-text').textContent   = q.text;
+    document.getElementById('q-icon').innerHTML = q.category === 'heat' ? heatIcon : harassIcon;
+
+    const fb = document.getElementById('feedback-box');
+    fb.style.display = 'none'; fb.className = 'feedback-box';
+
+    const btnNext = document.getElementById('btn-next');
+    btnNext.style.display = 'none';
+    btnNext.textContent = current === total - 1 ? '結果を見る 📊' : '次の問題へ →';
+
+    const btnYes = document.getElementById('btn-yes'), btnNo = document.getElementById('btn-no');
+    btnYes.disabled = false; btnNo.disabled = false;
+    btnYes.className = 'btn-answer yes'; btnNo.className = 'btn-answer no';
+  }
+
+  function answer(userAnswer) {
+    const q = questions[current], correct = userAnswer === q.answer;
+    if (correct) score++;
+    userAnswers.push({ correct, userAnswer });
+
+    const btnYes = document.getElementById('btn-yes'), btnNo = document.getElementById('btn-no');
+    btnYes.disabled = true; btnNo.disabled = true;
+    if (userAnswer) { btnYes.className = 'btn-answer ' + (correct ? 'selected-correct' : 'selected-wrong'); }
+    else            { btnNo.className  = 'btn-answer ' + (correct ? 'selected-correct' : 'selected-wrong'); }
+
+    const fb = document.getElementById('feedback-box');
+    fb.className = 'feedback-box ' + (correct ? 'correct' : 'wrong');
+    document.getElementById('feedback-mark').textContent = correct ? '⭕' : '❌';
+    document.getElementById('feedback-text').textContent =
+      (correct ? '正解！　' : '不正解。正解は Yes（はい）です。　') + q.feedback;
+    fb.style.display = 'flex';
+    document.getElementById('btn-next').style.display = 'block';
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current < questions.length) { showQuestion(); } else { showResult(); }
+  }
+
+  function showResult() {
+    // LocalStorage に保存
+    saveResult();
+
+    showScreen('result-screen');
+    document.getElementById('result-name').textContent   = userName;
+    document.getElementById('result-office').textContent = userOffice;
+    document.getElementById('score-num').textContent     = score;
+
+    let msg, sub;
+    if      (score === 10) { msg = '満点です！素晴らしい！';   sub = '熱中症対策とハラスメント予防の知識が完璧です。\n今後も安全で働きやすい職場づくりをよろしくお願いします。'; }
+    else if (score >= 8)   { msg = 'とても良くできました！';   sub = 'ほぼ正確な知識をお持ちです。\n間違えた問題を確認して、さらに理解を深めましょう。'; }
+    else if (score >= 5)   { msg = 'もう少し確認が必要です。'; sub = '基本は理解できています。\n間違えた項目を復習し、安全な職場づくりに役立てましょう。'; }
+    else                   { msg = 'しっかり復習しましょう！'; sub = '熱中症対策・ハラスメント予防のポイントを\n改めて確認してみてください。'; }
+
+    document.getElementById('result-message').textContent = msg;
+    document.getElementById('result-sub').textContent     = sub;
+
+    const list = document.getElementById('summary-list');
+    list.innerHTML = '';
+    questions.forEach((q, i) => {
+      const ua = userAnswers[i], item = document.createElement('div');
+      item.className = 'summary-item';
+      item.innerHTML = `<span class="s-icon">${ua.correct ? '⭕' : '❌'}</span><span><span class="s-num">${q.number}</span>　${q.text.length > 40 ? q.text.substring(0, 40) + '…' : q.text}</span>`;
+      list.appendChild(item);
+    });
+  }
+
+  function retryQuiz() {
+    current = 0; score = 0; userAnswers = [];
+    document.getElementById('input-name').value   = '';
+    document.getElementById('input-office').value = '';
+    document.getElementById('btn-start').disabled = true;
+    showScreen('start-screen');
+  }
+
+  /* ─────────────────────────────────────────
+     LocalStorage 保存・読み込み
+  ───────────────────────────────────────── */
+  function loadResults() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveResult() {
+    const results = loadResults();
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const datetime = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    results.push({
+      datetime,
+      name:    userName,
+      office:  userOffice,
+      score,
+      answers: userAnswers.map(a => a.correct ? 1 : 0)
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+
+    // Googleフォームへ自動送信
+    submitToGoogleForm();
+  }
+
+  function submitToGoogleForm() {
+    const FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSev5N5zN835rSxEZW6BDgcPQs9Ji8kHT-SJRnD0Xr6IJK2jDw/formResponse';
+    const answersText = userAnswers.map((a, i) =>
+      `${questions[i].number}:${a.correct ? '○' : '×'}`
+    ).join(' ');
+    const scoreText = `${score} / 10`;
+
+    const data = new FormData();
+    data.append('entry.1129050957', userName);
+    data.append('entry.362207301',  userOffice);
+    data.append('entry.1660798404', scoreText);
+    data.append('entry.782882357',  answersText);
+
+    // CORSを回避するためiframe経由で送信
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hidden_iframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.action = FORM_ACTION;
+    form.method = 'POST';
+    form.target = 'hidden_iframe';
+
+    data.forEach((value, key) => {
+      const input = document.createElement('input');
+      input.type  = 'hidden';
+      input.name  = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }, 3000);
+  }
+
+  /* ─────────────────────────────────────────
+     管理者機能
+  ───────────────────────────────────────── */
+  function showAdminLogin() {
+    document.getElementById('admin-pw-input').value = '';
+    document.getElementById('admin-error').style.display = 'none';
+    showScreen('admin-login-screen');
+    setTimeout(() => document.getElementById('admin-pw-input').focus(), 100);
+  }
+
+  function adminLogin() {
+    const pw = document.getElementById('admin-pw-input').value;
+    if (pw === ADMIN_PASSWORD) {
+      document.getElementById('admin-error').style.display = 'none';
+      showScreen('admin-screen');
+      renderAdmin();
+    } else {
+      document.getElementById('admin-error').style.display = 'block';
+      document.getElementById('admin-pw-input').value = '';
+      document.getElementById('admin-pw-input').focus();
+    }
+  }
+
+  function adminLogout() { showScreen('start-screen'); }
+
+  function renderAdmin() {
+    renderStats();
+    renderTable();
+  }
+
+  function renderStats() {
+    const results = loadResults();
+    const total   = results.length;
+    const avg     = total ? (results.reduce((s, r) => s + r.score, 0) / total).toFixed(1) : '-';
+    const perfect = results.filter(r => r.score === 10).length;
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">回答者数</div></div>
+      <div class="stat-card"><div class="stat-num">${avg}</div><div class="stat-label">平均得点</div></div>
+      <div class="stat-card"><div class="stat-num">${perfect}</div><div class="stat-label">満点者数</div></div>
+    `;
+  }
+
+  function renderTable() {
+    const results      = loadResults();
+    const filterOffice = document.getElementById('filter-office').value;
+    const filterScore  = document.getElementById('filter-score').value;
+
+    const filtered = results.filter(r => {
+      if (filterOffice && r.office !== filterOffice) return false;
+      if (filterScore === '10'   && r.score !== 10)              return false;
+      if (filterScore === 'high' && (r.score < 8 || r.score > 9)) return false;
+      if (filterScore === 'mid'  && (r.score < 5 || r.score > 7)) return false;
+      if (filterScore === 'low'  && r.score > 4)                  return false;
+      return true;
+    });
+
+    const tbody = document.getElementById('admin-tbody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div>回答データがありません</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = [...filtered].reverse().map((r, i) => {
+      const badgeClass = r.score === 10 ? 'perfect' : r.score >= 8 ? 'high' : r.score >= 5 ? 'mid' : 'low';
+      const dots = (r.answers || []).map(a =>
+        `<div class="dot ${a ? 'ok' : 'ng'}" title="${a ? '正解' : '不正解'}"></div>`
+      ).join('');
+      return `
+        <tr>
+          <td>${filtered.length - i}</td>
+          <td>${r.datetime}</td>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.office}</td>
+          <td><span class="score-badge ${badgeClass}">${r.score} / 10</span></td>
+          <td><div class="answers-dot">${dots}</div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function clearAllData() {
+    if (confirm('すべての回答データを削除します。\nこの操作は取り消せません。よろしいですか？')) {
+      localStorage.removeItem(STORAGE_KEY);
+      renderAdmin();
+    }
+  }
+
+  function downloadCSV() {
+    const results = loadResults();
+    if (results.length === 0) { alert('データがありません'); return; }
+
+    const header = ['No', '日時', '氏名', '事業所', '得点', ...questions.map(q => q.number)];
+    const rows   = [...results].reverse().map((r, i) => [
+      i + 1,
+      r.datetime,
+      r.name,
+      r.office,
+      r.score,
+      ...(r.answers || []).map(a => a ? '○' : '×')
+    ]);
+
+    const csv = [header, ...rows].map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\r\n');
+
+    const bom  = '﻿';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `クイズ回答結果_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  /* ─────────────────────────────────────────
+     画面切り替え
+  ───────────────────────────────────────── */
+  function showScreen(id) {
+    ['start-screen','quiz-screen','result-screen','admin-login-screen','admin-screen']
+      .forEach(s => document.getElementById(s).style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+  }
+</script>
+</body>
+</html>
