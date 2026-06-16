@@ -763,8 +763,11 @@
     data.append('entry.1660798404', scoreText);
     data.append('entry.782882357',  answersText);
 
-    // no-cors の fetch は送信完了（またはネットワーク失敗）を Promise で待てる
-    return fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: data });
+    // keepalive: ページが閉じられても送信を完了させる
+    // Promise.race でタイムアウト15秒を設定
+    const fetchPromise = fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: data, keepalive: true });
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+    return Promise.race([fetchPromise, timeout]);
   }
 
   /* ─────────────────────────────────────────
@@ -884,10 +887,4 @@
      画面切り替え
   ───────────────────────────────────────── */
   function showScreen(id) {
-    ['start-screen','quiz-screen','submitting-screen','result-screen','admin-login-screen','admin-screen']
-      .forEach(s => document.getElementById(s).style.display = 'none');
-    document.getElementById(id).style.display = 'block';
-  }
-</script>
-</body>
-</html>
+    ['start-screen','quiz-screen','submitting-screen','result-scree
