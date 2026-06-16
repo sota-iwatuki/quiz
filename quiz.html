@@ -65,6 +65,28 @@
     #result-screen { display: none; }
     #admin-login-screen { display: none; }
     #admin-screen  { display: none; }
+    #submitting-screen { display: none; }
+
+    /* ── Submitting Screen ── */
+    #submitting-screen { padding: 64px 36px; text-align: center; }
+    .spinner {
+      width: 56px; height: 56px; margin: 0 auto 24px;
+      border: 5px solid #e8f5ee; border-top: 5px solid #2d9e5f;
+      border-radius: 50%; animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .submitting-text { font-size: 1rem; color: #1a6b3c; font-weight: 700; margin-bottom: 6px; }
+    .submitting-sub { font-size: 0.85rem; color: #888; }
+    .submit-error-icon { font-size: 2.6rem; margin-bottom: 12px; }
+    .submit-error-text { font-size: 1.02rem; color: #c0392b; font-weight: 700; margin-bottom: 8px; }
+    .submit-error-sub { font-size: 0.88rem; color: #777; line-height: 1.7; margin-bottom: 24px; }
+    .btn-retry-submit {
+      background: linear-gradient(135deg, #1a6b3c, #2d9e5f);
+      color: #fff; border: none; border-radius: 50px;
+      padding: 14px 40px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s; letter-spacing: 0.06em;
+    }
+    .btn-retry-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,107,60,0.35); }
 
     /* ── Start Screen ── */
     #start-screen { padding: 0 0 40px; }
@@ -452,6 +474,21 @@
     <button class="btn-next" id="btn-next" onclick="nextQuestion()"></button>
   </div>
 
+  <!-- ══ SUBMITTING SCREEN ══ -->
+  <div id="submitting-screen">
+    <div id="submitting-sending">
+      <div class="spinner"></div>
+      <p class="submitting-text">回答を送信しています…</p>
+      <p class="submitting-sub">このまま画面を閉じずにお待ちください</p>
+    </div>
+    <div id="submitting-error" style="display:none;">
+      <div class="submit-error-icon">⚠️</div>
+      <p class="submit-error-text">送信に失敗しました</p>
+      <p class="submit-error-sub">通信状況をご確認の上、もう一度お試しください。<br>解決しない場合は管理者にご連絡ください。</p>
+      <button class="btn-retry-submit" onclick="retrySubmit()">↻ 再送信する</button>
+    </div>
+  </div>
+
   <!-- ══ RESULT SCREEN ══ -->
   <div id="result-screen">
     <div class="result-person-card">
@@ -633,13 +670,32 @@
 
   function nextQuestion() {
     current++;
-    if (current < questions.length) { showQuestion(); } else { showResult(); }
+    if (current < questions.length) { showQuestion(); } else { submitAndShowResult(); }
+  }
+
+  function submitAndShowResult() {
+    saveResultLocal();
+    showScreen('submitting-screen');
+    setSubmitStatus('sending');
+
+    submitToGoogleForm()
+      .then(() => { showResult(); })
+      .catch(() => { setSubmitStatus('error'); });
+  }
+
+  function setSubmitStatus(state) {
+    document.getElementById('submitting-sending').style.display = state === 'sending' ? 'block' : 'none';
+    document.getElementById('submitting-error').style.display   = state === 'error'   ? 'block' : 'none';
+  }
+
+  function retrySubmit() {
+    setSubmitStatus('sending');
+    submitToGoogleForm()
+      .then(() => { showResult(); })
+      .catch(() => { setSubmitStatus('error'); });
   }
 
   function showResult() {
-    // LocalStorage に保存
-    saveResult();
-
     showScreen('result-screen');
     document.getElementById('result-name').textContent   = userName;
     document.getElementById('result-office').textContent = userOffice;
@@ -679,7 +735,7 @@
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
   }
 
-  function saveResult() {
+  function saveResultLocal() {
     const results = loadResults();
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
@@ -692,9 +748,6 @@
       answers: userAnswers.map(a => a.correct ? 1 : 0)
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
-
-    // Googleフォームへ自動送信
-    submitToGoogleForm();
   }
 
   function submitToGoogleForm() {
@@ -710,32 +763,8 @@
     data.append('entry.1660798404', scoreText);
     data.append('entry.782882357',  answersText);
 
-    // CORSを回避するためiframe経由で送信
-    const iframe = document.createElement('iframe');
-    iframe.name = 'hidden_iframe';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    const form = document.createElement('form');
-    form.action = FORM_ACTION;
-    form.method = 'POST';
-    form.target = 'hidden_iframe';
-
-    data.forEach((value, key) => {
-      const input = document.createElement('input');
-      input.type  = 'hidden';
-      input.name  = key;
-      input.value = value;
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(() => {
-      document.body.removeChild(form);
-      document.body.removeChild(iframe);
-    }, 3000);
+    // no-cors の fetch は送信完了（またはネットワーク失敗）を Promise で待てる
+    return fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: data });
   }
 
   /* ─────────────────────────────────────────
@@ -855,7 +884,7 @@
      画面切り替え
   ───────────────────────────────────────── */
   function showScreen(id) {
-    ['start-screen','quiz-screen','result-screen','admin-login-screen','admin-screen']
+    ['start-screen','quiz-screen','submitting-screen','result-screen','admin-login-screen','admin-screen']
       .forEach(s => document.getElementById(s).style.display = 'none');
     document.getElementById(id).style.display = 'block';
   }
